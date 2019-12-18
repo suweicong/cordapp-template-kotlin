@@ -1,6 +1,7 @@
 //package com.example.client
 package com.template
 
+import com.template.flows.ExampleFlowWithFixedToken
 import com.template.states.ExampleEvolvableTokenType
 import com.template.flows.MoveEvolvableFungibleTokenFlow
 
@@ -29,19 +30,21 @@ class ExampleClientRPC {
 
     fun main(args: Array<String>) {
 
-        val args = "localhost:10006"
-        val nodeAddress = NetworkHostAndPort.parse(args)
+        val issue_amount = 90000L
+        val transafer_amount = 1L
+        val args_a = "localhost:10006"
+        val nodeAddress_a = NetworkHostAndPort.parse(args_a)
+        val client_a = CordaRPCClient(nodeAddress_a)
+        val proxy_a = client_a.start("user1", "test").proxy
+        val a = proxy_a.partiesFromName("PartyA", exactMatch = false).first()
 
-        val client = CordaRPCClient(nodeAddress)
+        proxy_a.startFlow(::ExampleFlowWithFixedToken, "MXN", issue_amount, a)
 
-        val proxy = client.start("user1", "test").proxy
 
-        val a = proxy.partiesFromName("PartyA", exactMatch = false).first()
-        val amount=1L
         for (i in 0..100) {
-            proxy.startFlow(::MoveEvolvableFungibleTokenFlow, a, amount, a)
+            proxy_a.startFlow(::MoveEvolvableFungibleTokenFlow, a, transafer_amount, a)
             println(i)
-            Thread.sleep(100)
+            Thread.sleep(30)
 
         }
     }
